@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan de Estudios — Traductorado</title>
+<style>
+:root {
+  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Consolas', 'SF Mono', 'Fira Code', monospace;
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --border: #1e1e2e;
+  --text: #e2e2f0;
+  --muted: #5a5a7a;
+  --final: #00e5a0;
+  --final-bg: #001a12;
+  --regular: #a78bfa;
+  --regular-bg: #0e0820;
+  --cursando: #3b9eff;
+  --cursando-bg: #00102a;
+  --puedo: #f5c842;
+  --puedo-bg: #1a1400;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-sans); min-height: 100vh; }
+
+/* ── HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,10,15,0.97);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex; align-items: stretch; justify-content: space-between; flex-wrap: wrap;
+}
+.header-title {
+  font-size: 1rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  background: linear-gradient(90deg, #e2e2f0 30%, #3b9eff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  display: flex; align-items: center; padding: 14px 0;
+}
+.tabs { display: flex; align-items: stretch; }
+.tab {
+  padding: 0 16px; cursor: pointer; font-size: .7rem; font-weight: 700;
+  letter-spacing: .07em; text-transform: uppercase;
+  color: var(--muted); border-bottom: 2px solid transparent;
+  display: flex; align-items: center; gap: 5px;
+  transition: color .18s, border-color .18s;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--text); border-bottom-color: var(--cursando); }
+.header-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 8px 0; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: .63rem; font-family: var(--font-mono); letter-spacing: .05em; text-transform: uppercase; opacity: .8; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.save-indicator { display: flex; align-items: center; gap: 6px; font-size: .62rem; font-family: var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); transition: color .3s; white-space: nowrap; }
+.save-indicator.saved { color: var(--final); }
+.save-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: background .3s; flex-shrink: 0; }
+.save-indicator.saved .save-dot { background: var(--final); box-shadow: 0 0 6px var(--final); }
+.btn-reset { display: flex; align-items: center; gap: 5px; padding: 5px 11px; background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-family: var(--font-mono); font-size: .62rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; transition: border-color .15s, color .15s; white-space: nowrap; }
+.btn-reset:hover { border-color: #ff4d6d; color: #ff4d6d; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ══════════════════════ PLAN ══════════════════════ */
+#panelPlan { padding: 32px 28px 80px; min-width: 860px; overflow-x: auto; }
+.stats { display: flex; gap: 22px; margin-bottom: 26px; flex-wrap: wrap; }
+.stat { display: flex; flex-direction: column; gap: 2px; }
+.stat-val { font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.stat-label { font-size: .62rem; font-family: var(--font-mono); color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+.progress-bar { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 32px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--final), var(--cursando)); border-radius: 2px; transition: width .6s ease; }
+.year-block { display: flex; align-items: flex-start; margin-bottom: 40px; }
+.year-label { writing-mode: vertical-lr; transform: rotate(180deg); font-size: .6rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); min-width: 30px; user-select: none; border-right: 1px solid var(--border); margin-right: 18px; align-self: stretch; display: flex; align-items: center; justify-content: center; padding: 0 8px 0 0; }
+.subjects-row { display: flex; flex-wrap: wrap; gap: 12px; flex: 1; }
+.card { position: relative; width: 172px; min-height: 82px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--surface); padding: 11px 13px 36px; cursor: pointer; transition: transform .16s, box-shadow .16s; user-select: none; }
+.card:hover { transform: translateY(-2px); }
+.card.final    { border-color: var(--final);   background: var(--final-bg);   box-shadow: 0 0 16px rgba(0,229,160,.13); }
+.card.regular  { border-color: var(--regular);  background: var(--regular-bg); box-shadow: 0 0 16px rgba(167,139,250,.13); }
+.card.cursando { border-color: var(--cursando); background: var(--cursando-bg);box-shadow: 0 0 16px rgba(59,158,255,.13); }
+.card.puedo    { border-color: var(--puedo);    background: var(--puedo-bg);   box-shadow: 0 0 14px rgba(245,200,66,.10); }
+.card.no-puede { border-color: var(--border);   background: var(--surface);    opacity: .45; }
+.card.no-puede:hover { opacity: .65; transform: none; }
+.card-name   { font-size: .82rem; font-weight: 700; line-height: 1.3; margin-bottom: 5px; }
+.card-cuatri { font-family: var(--font-mono); font-size: .62rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.card-nota   { font-family: var(--font-mono); font-size: .68rem; margin-top: 3px; color: var(--final); }
+.card-status { position: absolute; bottom: 0; left: 0; right: 0; border-top: 1px solid rgba(255,255,255,.05); border-radius: 0 0 9px 9px; padding: 5px 10px; font-size: .6rem; font-family: var(--font-mono); letter-spacing: .07em; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
+.card.final    .card-status { color: var(--final); }
+.card.regular  .card-status { color: var(--regular); }
+.card.cursando .card-status { color: var(--cursando); }
+.card.puedo    .card-status { color: var(--puedo); }
+.card.no-puede .card-status { color: var(--muted); }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.final    .status-dot { background: var(--final);    box-shadow: 0 0 5px var(--final); }
+.regular  .status-dot { background: var(--regular);  box-shadow: 0 0 5px var(--regular); }
+.cursando .status-dot { background: var(--cursando); box-shadow: 0 0 5px var(--cursando); animation: pulse 1.8s infinite; }
+.puedo    .status-dot { background: var(--puedo); }
+.no-puede .status-dot { background: var(--muted); }
+@keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 4px var(--cursando);}50%{opacity:.4;box-shadow:0 0 14px var(--cursando);} }
+
+/* state menu */
+.cycle-menu { position: fixed; z-index: 300; background: #13131e; border: 1px solid #272738; border-radius: 11px; padding: 6px; box-shadow: 0 20px 50px rgba(0,0,0,.8); min-width: 190px; display: none; }
+.cycle-menu.open { display: block; }
+.cycle-option { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 7px; font-size: .72rem; font-family: var(--font-mono); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; transition: background .14s; }
+.cycle-option:hover { background: rgba(255,255,255,.07); }
+.cycle-option .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.menu-divider { height: 1px; background: var(--border); margin: 4px 8px; }
+.nota-row { display: flex; align-items: center; gap: 8px; padding: 6px 12px 8px; font-size: .68rem; font-family: var(--font-mono); color: var(--muted); letter-spacing: .05em; }
+.nota-row input { width: 52px; background: #1e1e2e; border: 1px solid #2e2e44; border-radius: 5px; color: var(--text); font-family: var(--font-mono); font-size: .72rem; padding: 4px 7px; outline: none; transition: border-color .15s; }
+.nota-row input:focus { border-color: var(--final); }
+
+/* correlativas panel */
+.corr-panel { position: fixed; z-index: 400; background: #0f0f1a; border: 1px solid #2a2a40; border-radius: 13px; padding: 0; box-shadow: 0 24px 60px rgba(0,0,0,.85); min-width: 260px; max-width: 300px; display: none; overflow: hidden; }
+.corr-panel.open { display: block; }
+.corr-header { padding: 14px 16px 12px; border-bottom: 1px solid #1e1e2e; display: flex; flex-direction: column; gap: 4px; }
+.corr-title { font-size: .88rem; font-weight: 800; }
+.corr-subtitle { font-size: .62rem; font-family: var(--font-mono); color: var(--muted); letter-spacing: .07em; text-transform: uppercase; }
+.corr-body { padding: 10px 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.corr-empty { font-size: .75rem; color: var(--muted); font-style: italic; padding: 6px 4px; text-align: center; }
+.corr-section-label { font-size: .6rem; font-family: var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 4px 4px 2px; border-bottom: 1px solid #1e1e2e; margin-bottom: 2px; }
+.corr-item { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; background: #141420; }
+.corr-item-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.corr-item-dot.ok     { background: var(--final);   box-shadow: 0 0 6px var(--final); }
+.corr-item-dot.ok-reg { background: var(--regular); box-shadow: 0 0 6px var(--regular); }
+.corr-item-dot.miss   { background: #ff4d6d;        box-shadow: 0 0 6px #ff4d6d; }
+.corr-item-info { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.corr-item-name { font-size: .78rem; font-weight: 700; }
+.corr-item-status { font-size: .6rem; font-family: var(--font-mono); letter-spacing: .06em; text-transform: uppercase; }
+.corr-item-status.ok     { color: var(--final); }
+.corr-item-status.ok-reg { color: var(--regular); }
+.corr-item-status.miss   { color: #ff4d6d; }
+.corr-item-check { font-size: 1rem; flex-shrink: 0; }
+.corr-footer { padding: 10px 16px 12px; border-top: 1px solid #1e1e2e; display: flex; align-items: center; justify-content: space-between; }
+.corr-result { font-size: .72rem; font-weight: 700; }
+.corr-result.all-ok  { color: var(--final); }
+.corr-result.missing { color: #ff4d6d; }
+.corr-result.no-corr { color: var(--muted); }
+.corr-hint { font-size: .58rem; font-family: var(--font-mono); color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+
+/* ══════════════════════ HORARIO ══════════════════════ */
+#panelHorario { padding: 32px 28px 80px; }
+.horario-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+.horario-title { font-size: 1.1rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.horario-cuatri { font-family: var(--font-mono); font-size: .7rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; background: var(--surface); border: 1px solid var(--border); padding: 5px 14px; border-radius: 6px; }
+.sched-wrap { overflow-x: auto; }
+.sched-grid { display: grid; grid-template-columns: 72px repeat(5, 1fr); gap: 5px; min-width: 600px; }
+.sched-head { background: #16161f; border: 1px solid var(--border); border-radius: 8px; padding: 13px 6px; text-align: center; font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--text); }
+.sched-head.corner { background: transparent; border-color: transparent; }
+.sched-time { background: #16161f; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: .7rem; font-weight: 600; color: var(--muted); text-align: center; min-height: 68px; }
+.sched-empty { background: #0d0d15; border: 1px solid #15151f; border-radius: 8px; min-height: 68px; }
+.sched-cell { border-radius: 8px; min-height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8px 6px; transition: filter .15s, transform .15s; cursor: default; border: none; }
+.sched-cell:hover { filter: brightness(1.1); transform: scale(1.025); }
+.c-lengua3 { background: #FF8C00; color: #1c0800; }
+.c-tec     { background: #9900CC; color: #ffffff; }
+.c-filo    { background: #00AAFF; color: #001830; }
+.c-coder   { background: #FFE800; color: #1a1400; }
+.cell-name { font-size: .8rem; font-weight: 800; letter-spacing: .02em; line-height: 1.2; text-transform: uppercase; }
+.cell-badge { display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: .65rem; font-weight: 700; letter-spacing: .1em; padding: 2px 8px; border-radius: 4px; margin-top: 5px; text-transform: uppercase; }
+.c-lengua3 .cell-badge { background: rgba(0,0,0,.25); color: #1c0800; }
+.c-tec     .cell-badge { background: rgba(255,255,255,.22); color: #fff; }
+.c-filo    .cell-badge { background: rgba(0,0,0,.2); color: #001830; }
+.c-coder   .cell-badge { background: rgba(0,0,0,.18); color: #1a1400; }
+.sched-legend { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 24px; align-items: center; }
+.sched-legend-item { display: flex; align-items: center; gap: 8px; font-size: .72rem; font-family: var(--font-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--text); }
+.sched-legend-swatch { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+.sched-legend-sep { width: 1px; height: 20px; background: var(--border); }
+.badge-demo { display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: .62rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: .07em; text-transform: uppercase; }
+.badge-t { background: #2a2a3e; color: #bbb; }
+.badge-p { background: #3a3a50; color: #ddd; }
+
+/* ══════════════════════ EXÁMENES ══════════════════════ */
+#panelExamenes { padding: 32px 28px 80px; }
+
+.exam-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 14px; }
+.exam-top-title { font-size: 1.1rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+
+.exam-filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.filter-btn { padding: 5px 14px; border-radius: 20px; font-family: var(--font-mono); font-size: .65rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all .15s; }
+.filter-btn:hover { border-color: var(--text); color: var(--text); }
+.filter-btn.active { background: var(--cursando); border-color: var(--cursando); color: #fff; }
+
+.filter-select { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; color: var(--text); font-family: var(--font-mono); font-size: .68rem; padding: 5px 10px; outline: none; cursor: pointer; }
+.filter-select:focus { border-color: var(--cursando); }
+
+.btn-add { display: flex; align-items: center; gap: 6px; padding: 7px 16px; background: var(--cursando); border: none; border-radius: 8px; color: #fff; font-family: var(--font-mono); font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; transition: filter .15s; }
+.btn-add:hover { filter: brightness(1.12); }
+
+.exam-section-title { font-size: .68rem; font-family: var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 28px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+.exam-list { display: flex; flex-direction: column; gap: 10px; }
+.exam-empty { font-size: .8rem; color: var(--muted); font-style: italic; padding: 20px 0; text-align: center; }
+
+.exam-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 16px;
+  transition: border-color .15s;
+}
+.exam-card:hover { border-color: #2e2e44; }
+.exam-card.aprobado  { border-left: 3px solid var(--final); }
+.exam-card.desaprobado { border-left: 3px solid #ff4d6d; }
+.exam-card.pendiente { border-left: 3px solid var(--cursando); }
+
+.exam-countdown {
+  min-width: 64px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.exam-days { font-size: 1.5rem; font-weight: 800; line-height: 1; color: var(--cursando); }
+.exam-days.urgente { color: #ff4d6d; }
+.exam-days.hoy     { color: var(--puedo); }
+.exam-days-label { font-size: .58rem; font-family: var(--font-mono); color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+
+.exam-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.exam-materia { font-size: .88rem; font-weight: 700; }
+.exam-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.exam-fecha { font-size: .7rem; font-family: var(--font-mono); color: var(--muted); }
+.exam-turno { font-size: .62rem; font-family: var(--font-mono); background: #1e1e2e; color: var(--muted); padding: 2px 8px; border-radius: 4px; letter-spacing: .06em; text-transform: uppercase; }
+
+.exam-result-badge { font-size: .68rem; font-family: var(--font-mono); font-weight: 700; padding: 3px 10px; border-radius: 5px; letter-spacing: .07em; text-transform: uppercase; }
+.exam-result-badge.aprobado   { background: var(--final-bg);   color: var(--final); border: 1px solid var(--final); }
+.exam-result-badge.desaprobado{ background: #1a0008; color: #ff4d6d; border: 1px solid #ff4d6d; }
+.exam-result-badge.pendiente  { background: var(--cursando-bg); color: var(--cursando); border: 1px solid var(--cursando); }
+
+.exam-nota-badge { font-size: .72rem; font-family: var(--font-mono); color: var(--final); font-weight: 700; }
+
+.exam-actions { display: flex; gap: 6px; }
+.exam-btn { background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-size: .7rem; padding: 4px 10px; cursor: pointer; transition: all .14s; font-family: var(--font-mono); }
+.exam-btn:hover { border-color: var(--text); color: var(--text); }
+.exam-btn.del:hover { border-color: #ff4d6d; color: #ff4d6d; }
+
+/* ══════════════════════ TAREAS ══════════════════════ */
+#panelTareas { padding: 32px 28px 80px; }
+
+.tareas-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 14px; }
+.tareas-top-title { font-size: 1.1rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+
+.tareas-grid { display: flex; flex-wrap: wrap; gap: 18px; }
+
+.tarea-card {
+  width: 280px; background: var(--surface);
+  border-radius: 12px; border: 1.5px solid var(--border);
+  overflow: hidden; display: flex; flex-direction: column;
+}
+
+/* colores de cabecera de tarjeta por materia */
+.tarea-card-head {
+  padding: 12px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tarea-card-head-name { font-size: .82rem; font-weight: 800; letter-spacing: .02em; }
+.tarea-card-head-count { font-size: .65rem; font-family: var(--font-mono); opacity: .75; }
+
+.tarea-card-body { padding: 10px 12px 14px; flex: 1; display: flex; flex-direction: column; gap: 7px; }
+
+.tarea-item {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 8px 10px; border-radius: 8px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.05);
+  transition: opacity .2s;
+}
+.tarea-item.done { opacity: .45; }
+
+.tarea-check {
+  width: 16px; height: 16px; border-radius: 4px;
+  border: 1.5px solid var(--border); background: transparent;
+  cursor: pointer; flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, border-color .15s;
+}
+.tarea-check.checked { background: var(--final); border-color: var(--final); }
+.tarea-check.checked::after { content: '✓'; font-size: .6rem; color: #001a12; font-weight: 900; }
+
+.tarea-info { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.tarea-text { font-size: .78rem; font-weight: 600; line-height: 1.3; word-break: break-word; }
+.tarea-item.done .tarea-text { text-decoration: line-through; color: var(--muted); }
+.tarea-vence { font-size: .62rem; font-family: var(--font-mono); color: var(--muted); letter-spacing: .04em; }
+.tarea-vence.urgente { color: #ff4d6d; }
+.tarea-vence.hoy     { color: var(--puedo); }
+
+.tarea-del { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: .8rem; padding: 0 2px; flex-shrink: 0; transition: color .14s; }
+.tarea-del:hover { color: #ff4d6d; }
+
+.tarea-add-row { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+.tarea-add-row input, .tarea-add-row select {
+  width: 100%; background: #16161f; border: 1px solid var(--border);
+  border-radius: 7px; color: var(--text); font-family: var(--font-sans);
+  font-size: .75rem; padding: 7px 10px; outline: none; transition: border-color .15s;
+}
+.tarea-add-row input:focus, .tarea-add-row select:focus { border-color: var(--cursando); }
+.tarea-add-row input::placeholder { color: var(--muted); }
+.tarea-add-btn {
+  width: 100%; padding: 7px; background: rgba(59,158,255,.12); border: 1px solid rgba(59,158,255,.3);
+  border-radius: 7px; color: var(--cursando); font-family: var(--font-mono);
+  font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  cursor: pointer; transition: background .14s;
+}
+.tarea-add-btn:hover { background: rgba(59,158,255,.2); }
+
+.tarea-empty { font-size: .72rem; color: var(--muted); font-style: italic; padding: 8px 0; text-align: center; }
+
+/* ══════════════════════ MODALS ══════════════════════ */
+.modal-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,.75); display: none; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: #13131e; border: 1px solid #272738; border-radius: 14px; padding: 24px; max-width: 380px; width: 90%; box-shadow: 0 24px 60px rgba(0,0,0,.8); display: flex; flex-direction: column; gap: 14px; }
+.modal h3 { font-size: .95rem; font-weight: 800; }
+.modal-field { display: flex; flex-direction: column; gap: 5px; }
+.modal-label { font-size: .65rem; font-family: var(--font-mono); color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.modal-input { background: #1e1e2e; border: 1px solid #2e2e44; border-radius: 7px; color: var(--text); font-family: var(--font-sans); font-size: .8rem; padding: 8px 12px; outline: none; transition: border-color .15s; width: 100%; }
+.modal-input:focus { border-color: var(--cursando); }
+.modal-select { background: #1e1e2e; border: 1px solid #2e2e44; border-radius: 7px; color: var(--text); font-family: var(--font-sans); font-size: .8rem; padding: 8px 12px; outline: none; width: 100%; cursor: pointer; }
+.modal-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+.btn-cancel { padding: 8px 16px; background: transparent; border: 1px solid var(--border); border-radius: 7px; color: var(--muted); font-family: var(--font-mono); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.btn-cancel:hover { border-color: var(--text); color: var(--text); }
+.btn-confirm { padding: 8px 18px; background: var(--cursando); border: none; border-radius: 7px; color: #fff; font-family: var(--font-mono); font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; transition: filter .15s; }
+.btn-confirm:hover { filter: brightness(1.12); }
+.btn-confirm-reset { padding: 8px 16px; background: #2a0a0a; border: 1px solid #ff4d6d; border-radius: 7px; color: #ff4d6d; font-family: var(--font-mono); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.btn-confirm-reset:hover { background: #3a1010; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-title">📚 Traductorado</div>
+  <div class="tabs">
+    <div class="tab active" data-tab="plan">🗂 Plan</div>
+    <div class="tab" data-tab="horario">📅 Horarios</div>
+    <div class="tab" data-tab="examenes">📝 Exámenes</div>
+    <div class="tab" data-tab="tareas">✅ Tareas</div>
+  </div>
+  <div class="header-right">
+    <div class="legend" id="legendPlan">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--final)"></div>Final</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--regular)"></div>Regular</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--cursando)"></div>Cursando</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--puedo)"></div>Puedo cursar</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--muted)"></div>No disponible</div>
+    </div>
+    <div class="save-indicator" id="saveIndicator"><div class="save-dot"></div><span id="saveText">Sin cambios</span></div>
+    <button class="btn-reset" id="btnReset">↺ Resetear</button>
+  </div>
+</header>
+
+<!-- PLAN -->
+<div class="panel active" id="panelPlan">
+  <div class="stats" id="stats"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div id="plan"></div>
+</div>
+
+<!-- HORARIO -->
+<div class="panel" id="panelHorario">
+  <div class="horario-header">
+    <div class="horario-title">📅 Horario semanal</div>
+    <div class="horario-cuatri">1er Cuatrimestre · 2026</div>
+  </div>
+  <div class="sched-wrap"><div class="sched-grid" id="schedGrid"></div></div>
+  <div class="sched-legend">
+    <div class="sched-legend-item"><div class="sched-legend-swatch" style="background:#FF8C00"></div>Lengua Inglesa 3</div>
+    <div class="sched-legend-item"><div class="sched-legend-swatch" style="background:#9900CC"></div>TEC</div>
+    <div class="sched-legend-item"><div class="sched-legend-swatch" style="background:#00AAFF"></div>Filo de la Ciencia</div>
+    <div class="sched-legend-item"><div class="sched-legend-swatch" style="background:#FFE800"></div>Coderhouse</div>
+    <div class="sched-legend-sep"></div>
+    <div class="sched-legend-item"><span class="badge-demo badge-t">T</span>&nbsp;Teórico</div>
+    <div class="sched-legend-item"><span class="badge-demo badge-p">P</span>&nbsp;Práctico</div>
+  </div>
+</div>
+
+<!-- EXÁMENES -->
+<div class="panel" id="panelExamenes">
+  <div class="exam-top">
+    <div class="exam-top-title">📝 Exámenes</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div class="exam-filters">
+        <button class="filter-btn active" data-filter="todos">Todos</button>
+        <button class="filter-btn" data-filter="proximos">Próximos</button>
+        <button class="filter-btn" data-filter="historial">Historial</button>
+      </div>
+      <select class="filter-select" id="examFilterMateria">
+        <option value="">Todas las materias</option>
+      </select>
+      <button class="btn-add" id="btnAddExamen">+ Agregar examen</button>
+    </div>
+  </div>
+  <div id="examContent"></div>
+</div>
+
+<!-- TAREAS -->
+<div class="panel" id="panelTareas">
+  <div class="tareas-top">
+    <div class="tareas-top-title">✅ Tareas</div>
+  </div>
+  <div class="tareas-grid" id="tareasGrid"></div>
+</div>
+
+<!-- menus flotantes -->
+<div class="cycle-menu" id="cycleMenu">
+  <div class="cycle-option" data-status="final"><div class="dot" style="background:var(--final)"></div>Final aprobado</div>
+  <div class="cycle-option" data-status="regular"><div class="dot" style="background:var(--regular)"></div>Regular</div>
+  <div class="cycle-option" data-status="cursando"><div class="dot" style="background:var(--cursando)"></div>Cursando</div>
+  <div class="cycle-option" data-status="puedo"><div class="dot" style="background:var(--puedo)"></div>Puedo cursar</div>
+  <div class="cycle-option" data-status="no-puede"><div class="dot" style="background:var(--muted)"></div>No disponible</div>
+  <div class="menu-divider"></div>
+  <div class="nota-row">Nota final: <input type="number" id="notaInput" min="1" max="10" placeholder="—"></div>
+</div>
+
+<div class="corr-panel" id="corrPanel">
+  <div class="corr-header"><div class="corr-title" id="corrTitle">—</div><div class="corr-subtitle">Correlativas necesarias</div></div>
+  <div class="corr-body" id="corrBody"></div>
+  <div class="corr-footer"><div class="corr-result" id="corrResult">—</div><div class="corr-hint">Click fuera para cerrar</div></div>
+</div>
+
+<!-- modal agregar examen -->
+<div class="modal-overlay" id="modalExamen">
+  <div class="modal">
+    <h3>📝 Agregar examen</h3>
+    <div class="modal-field"><div class="modal-label">Materia</div><select class="modal-select" id="examModalMateria"></select></div>
+    <div class="modal-row2">
+      <div class="modal-field"><div class="modal-label">Fecha</div><input type="date" class="modal-input" id="examModalFecha"></div>
+      <div class="modal-field"><div class="modal-label">Turno</div>
+        <select class="modal-select" id="examModalTurno">
+          <option value="">— Turno —</option>
+          <option value="1ra fecha">1ra fecha</option>
+          <option value="2da fecha">2da fecha</option>
+          <option value="Recuperatorio">Recuperatorio</option>
+          <option value="Final">Final</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-row2">
+      <div class="modal-field"><div class="modal-label">Resultado</div>
+        <select class="modal-select" id="examModalResultado">
+          <option value="pendiente">Pendiente</option>
+          <option value="aprobado">Aprobado</option>
+          <option value="desaprobado">Desaprobado</option>
+        </select>
+      </div>
+      <div class="modal-field"><div class="modal-label">Nota (si aprobó)</div><input type="number" class="modal-input" id="examModalNota" min="1" max="10" placeholder="—"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="btnCancelExamen">Cancelar</button>
+      <button class="btn-confirm" id="btnConfirmExamen">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- modal reset -->
+<div class="modal-overlay" id="modalReset">
+  <div class="modal">
+    <h3>⚠️ Resetear progreso</h3>
+    <p style="font-size:.78rem;color:var(--muted);line-height:1.5">Esto borrará todos los cambios guardados y volverá al estado inicial. ¿Estás segura?</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="btnCancelReset">Cancelar</button>
+      <button class="btn-confirm-reset" id="btnConfirmReset">Sí, resetear</button>
+    </div>
+  </div>
+</div>
+<script type="module">
+// ════════════════════════════════
+// FIREBASE IMPORTS & CONFIG
+// ════════════════════════════════
+import { initializeApp }                          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc,
+         collection, getDocs, addDoc, deleteDoc,
+         onSnapshot }                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyCo_AmD5WdMYHwxSPY2uLjKRcPahdBQGxM",
+  authDomain:        "traductoradoramiro.firebaseapp.com",
+  projectId:         "traductoradoramiro",
+  storageBucket:     "traductoradoramiro.firebasestorage.app",
+  messagingSenderId: "626409116017",
+  appId:             "1:626409116017:web:2fed120562671831bb66d0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ════════════════════════════════
+// TABS
+// ════════════════════════════════
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    const id = 'panel' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1);
+    document.getElementById(id).classList.add('active');
+    document.getElementById('legendPlan').style.display = tab.dataset.tab === 'plan' ? 'flex' : 'none';
+  });
+});
+
+// ════════════════════════════════
+// HORARIO
+// ════════════════════════════════
+const DIAS    = ['LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES'];
+const FRANJAS = ['7–9','9–11','11–13','13–15','15–17','17–19','19–21'];
+const CLASES  = [
+  { dia:0, franja:1, nombre:'LENGUA 3',     color:'c-lengua3', badge:'Taller' },
+  { dia:0, franja:2, nombre:'LENGUA 3',     color:'c-lengua3', badge:'T' },
+  { dia:0, franja:3, nombre:'LENGUA 3',     color:'c-lengua3', badge:'T' },
+  { dia:0, franja:4, nombre:'LENGUA 3',     color:'c-lengua3', badge:'P' },
+  { dia:1, franja:6, nombre:'CODERHOUSE',   color:'c-coder',   badge:'' },
+  { dia:2, franja:1, nombre:'FILO CIENCIA', color:'c-filo',    badge:'P' },
+  { dia:2, franja:2, nombre:'TEC',          color:'c-tec',     badge:'T' },
+  { dia:2, franja:4, nombre:'LENGUA 3',     color:'c-lengua3', badge:'P' },
+  { dia:3, franja:0, nombre:'TEC',          color:'c-tec',     badge:'P' },
+  { dia:3, franja:1, nombre:'FILO CIENCIA', color:'c-filo',    badge:'T' },
+  { dia:3, franja:6, nombre:'CODERHOUSE',   color:'c-coder',   badge:'' },
+];
+function buildSchedule() {
+  const grid = document.getElementById('schedGrid');
+  grid.innerHTML = '';
+  const corner = document.createElement('div'); corner.className = 'sched-head corner'; grid.appendChild(corner);
+  DIAS.forEach(d => { const h = document.createElement('div'); h.className = 'sched-head'; h.textContent = d; grid.appendChild(h); });
+  FRANJAS.forEach((f, fi) => {
+    const tc = document.createElement('div'); tc.className = 'sched-time'; tc.textContent = f; grid.appendChild(tc);
+    DIAS.forEach((_, di) => {
+      const entry = CLASES.find(c => c.dia === di && c.franja === fi);
+      if (entry) {
+        const cell = document.createElement('div');
+        cell.className = 'sched-cell ' + entry.color;
+        cell.innerHTML = '<div class="cell-name">' + entry.nombre + '</div>' + (entry.badge ? '<div class="cell-badge">' + entry.badge + '</div>' : '');
+        grid.appendChild(cell);
+      } else {
+        const empty = document.createElement('div'); empty.className = 'sched-empty'; grid.appendChild(empty);
+      }
+    });
+  });
+}
+buildSchedule();
+
+// ════════════════════════════════
+// MATERIAS DATA
+// ════════════════════════════════
+const MATERIAS_DEFAULT = [
+  { id:'ILI',      name:'ILI',                   year:1, cuatri:'Anual', correlativas:[],                            status:'final',   nota:null },
+  { id:'DER1',     name:'Derecho 1',              year:1, cuatri:'2',    correlativas:[],                            status:'regular', nota:null },
+  { id:'IELC',     name:'IELC',                   year:1, cuatri:'1',    correlativas:[],                            status:'final',   nota:7    },
+  { id:'FILO',     name:'Filosofía',              year:1, cuatri:'1-2',  correlativas:[],                            status:'regular', nota:null },
+  { id:'LITELAT',  name:'Lite Latinoam.',         year:1, cuatri:'1-2',  correlativas:['FILO'],                      status:'puedo',   nota:null },
+  { id:'FON1',     name:'Fonética Inglesa 1',     year:2, cuatri:'Anual',correlativas:['ILI'],                       status:'regular', nota:null },
+  { id:'GRAM1',    name:'Gramática Inglesa 1',    year:2, cuatri:'2',    correlativas:['ILI'],                       status:'regular', nota:null },
+  { id:'LENG1',    name:'Lengua Inglesa 1',       year:2, cuatri:'Anual',correlativas:['ILI'],                       status:'regular', nota:null },
+  { id:'TEC',      name:'TEC',                    year:2, cuatri:'Anual',correlativas:['IELC'],                      status:'regular', nota:null },
+  { id:'DER2',     name:'Derecho 2',              year:2, cuatri:'1',    correlativas:['DER1'],                      status:'regular', nota:null },
+  { id:'FON2',     name:'Fonética Inglesa 2',     year:3, cuatri:'Anual',correlativas:['FON1','LENG1'],              status:'regular', nota:null },
+  { id:'GRAM2',    name:'Gramática Inglesa 2',    year:3, cuatri:'1',    correlativas:['GRAM1'],                     status:'puedo',   nota:null },
+  { id:'LENG2',    name:'Lengua Inglesa 2',       year:3, cuatri:'Anual',correlativas:['FON1','LENG1'],              status:'regular', nota:null },
+  { id:'GRAMCOMP', name:'Gramática Comparada',    year:3, cuatri:'2',    correlativas:['GRAM1'],                     status:'puedo',   nota:null },
+  { id:'LITEU',    name:'Lit. EEUU / Ing. Cont.', year:3, cuatri:'1-2',  correlativas:['LENG1'],                     status:'puedo',   nota:null },
+  { id:'FILOCI',   name:'Filo de las ciencias',   year:3, cuatri:'1',    correlativas:['IELC','FILO'],               status:'cursando',nota:null },
+  { id:'LENG3',    name:'Lengua Inglesa 3',       year:4, cuatri:'Anual',correlativas:['LENG2'],                     status:'cursando',nota:null },
+  { id:'DIC1',     name:'Dicción Inglesa 1',      year:4, cuatri:'1',    correlativas:['FON2'],                      status:'puedo',   nota:null },
+  { id:'LING',     name:'Lingüística',            year:4, cuatri:'2',    correlativas:['GRAM2','LENG2'],             status:'no-puede',nota:null },
+  { id:'TRADLIT1', name:'Traducción Literaria 1', year:4, cuatri:'Anual',correlativas:['LENG2','GRAMCOMP','LITEU'],  status:'no-puede',nota:null },
+  { id:'TRADCT1',  name:'Traducción Cient-Téc 1', year:4, cuatri:'Anual',correlativas:['LENG2','GRAMCOMP','FILOCI'], status:'no-puede',nota:null },
+  { id:'TRADJE1',  name:'Traducción Jur-Econ 1',  year:4, cuatri:'Anual',correlativas:['LENG2','GRAMCOMP','DER2'],   status:'no-puede',nota:null },
+  { id:'LENG4',    name:'Lengua Inglesa 4',       year:5, cuatri:'Anual',correlativas:['LENG3'],                              status:'no-puede',nota:null },
+  { id:'INTERP',   name:'Interpretación',         year:5, cuatri:'Anual',correlativas:['TRADLIT1','TRADCT1','TRADJE1'],       status:'no-puede',nota:null },
+  { id:'TRADLIT2', name:'Traducción Literaria 2', year:5, cuatri:'2',    correlativas:['TRADLIT1'],                           status:'no-puede',nota:null },
+  { id:'TRADCT2',  name:'Traducción Cient-Téc 2', year:5, cuatri:'Anual',correlativas:['TRADCT1'],                           status:'no-puede',nota:null },
+  { id:'PRAC',     name:'Prácticas en Traducción',year:5, cuatri:'-',    correlativas:['TRADJE1','TRADCT1','TRADLIT1'],       status:'no-puede',nota:null },
+  { id:'TRADJE2',  name:'Traducción Jur-Econ 2',  year:5, cuatri:'1',    correlativas:['TRADJE1'],                           status:'no-puede',nota:null },
+  { id:'CAP1',     name:'Capacitación Idioma 1',  year:5, cuatri:'-',    correlativas:[],                                    status:'puedo',   nota:null },
+  { id:'CAP2',     name:'Capacitación Idioma 2',  year:5, cuatri:'2',    correlativas:['CAP1'],                              status:'no-puede',nota:null },
+];
+const materias = MATERIAS_DEFAULT.map(m => ({...m}));
+
+// ════════════════════════════════
+// STATE
+// ════════════════════════════════
+let state = {};
+let exams = [];
+let tareasData = {};
+
+function getDefaultState() {
+  const s = {};
+  MATERIAS_DEFAULT.forEach(m => { s[m.id] = { status: m.status, nota: m.nota }; });
+  return s;
+}
+
+// ── SAVE INDICATOR ──
+let saveTimer = null;
+function showSaved() {
+  const ind = document.getElementById('saveIndicator'), txt = document.getElementById('saveText');
+  ind.classList.add('saved'); txt.textContent = 'Guardado ✓';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { ind.classList.remove('saved'); txt.textContent = 'Sincronizado ✓'; }, 2500);
+}
+function showSaving() {
+  const txt = document.getElementById('saveText');
+  txt.textContent = 'Guardando...';
+}
+
+// ════════════════════════════════
+// FIRESTORE — PLAN
+// ════════════════════════════════
+async function saveState() {
+  showSaving();
+  try {
+    await setDoc(doc(db, 'datos', 'plan'), { state });
+    showSaved();
+  } catch(e) { console.error('Error guardando plan:', e); }
+}
+
+async function loadState() {
+  try {
+    const snap = await getDoc(doc(db, 'datos', 'plan'));
+    if (snap.exists() && snap.data().state) {
+      const saved = snap.data().state;
+      state = getDefaultState();
+      Object.keys(saved).forEach(id => { if (state[id]) state[id] = saved[id]; });
+      return true;
+    }
+  } catch(e) { console.error('Error cargando plan:', e); }
+  return false;
+}
+
+// escucha cambios en tiempo real desde otro dispositivo
+onSnapshot(doc(db, 'datos', 'plan'), (snap) => {
+  if (snap.exists() && snap.data().state) {
+    const saved = snap.data().state;
+    const newState = getDefaultState();
+    Object.keys(saved).forEach(id => { if (newState[id]) newState[id] = saved[id]; });
+    state = newState;
+    recomputeAll();
+    render();
+    renderTareas();
+  }
+});
+
+// ════════════════════════════════
+// FIRESTORE — EXÁMENES
+// ════════════════════════════════
+async function saveExams() {
+  try {
+    await setDoc(doc(db, 'datos', 'examenes'), { exams });
+  } catch(e) { console.error('Error guardando exámenes:', e); }
+}
+
+async function loadExams() {
+  try {
+    const snap = await getDoc(doc(db, 'datos', 'examenes'));
+    if (snap.exists() && snap.data().exams) {
+      exams = snap.data().exams;
+    }
+  } catch(e) { console.error('Error cargando exámenes:', e); }
+}
+
+// escucha cambios en tiempo real
+onSnapshot(doc(db, 'datos', 'examenes'), (snap) => {
+  if (snap.exists() && snap.data().exams) {
+    exams = snap.data().exams;
+    renderExams();
+  }
+});
+
+// ════════════════════════════════
+// FIRESTORE — TAREAS
+// ════════════════════════════════
+async function saveTareas() {
+  try {
+    await setDoc(doc(db, 'datos', 'tareas'), { tareasData });
+  } catch(e) { console.error('Error guardando tareas:', e); }
+}
+
+async function loadTareas() {
+  try {
+    const snap = await getDoc(doc(db, 'datos', 'tareas'));
+    if (snap.exists() && snap.data().tareasData) {
+      tareasData = snap.data().tareasData;
+    }
+  } catch(e) { console.error('Error cargando tareas:', e); }
+}
+
+// escucha cambios en tiempo real
+onSnapshot(doc(db, 'datos', 'tareas'), (snap) => {
+  if (snap.exists() && snap.data().tareasData) {
+    tareasData = snap.data().tareasData;
+    renderTareas();
+  }
+});
+
+// ════════════════════════════════
+// RESET
+// ════════════════════════════════
+document.getElementById('btnReset').addEventListener('click', () => document.getElementById('modalReset').classList.add('open'));
+document.getElementById('btnCancelReset').addEventListener('click', () => document.getElementById('modalReset').classList.remove('open'));
+document.getElementById('btnConfirmReset').addEventListener('click', async () => {
+  state = getDefaultState();
+  await saveState();
+  document.getElementById('modalReset').classList.remove('open');
+  document.getElementById('saveText').textContent = 'Sincronizado ✓';
+  render();
+});
+
+// ════════════════════════════════
+// PLAN LOGIC
+// ════════════════════════════════
+function isUnlocked(id) { const s = state[id]?.status; return s === 'final' || s === 'regular'; }
+function canUnlock(m)   { return m.correlativas.every(cid => isUnlocked(cid)); }
+function recomputeAll() {
+  let changed = true;
+  while (changed) {
+    changed = false;
+    materias.forEach(m => {
+      const s = state[m.id].status;
+      if (s === 'no-puede' && canUnlock(m))                     { state[m.id].status = 'puedo';    changed = true; }
+      if ((s === 'puedo' || s === 'cursando') && !canUnlock(m)) { state[m.id].status = 'no-puede'; changed = true; }
+    });
+  }
+}
+const statusLabel = { 'final':'Final aprobado','regular':'Regular','cursando':'Cursando','puedo':'Puedo cursar','no-puede':'No disponible' };
+
+function render() {
+  const planEl = document.getElementById('plan'); planEl.innerHTML = '';
+  const years = [...new Set(materias.map(m => m.year))].sort();
+  years.forEach(yr => {
+    const block = document.createElement('div'); block.className = 'year-block';
+    const label = document.createElement('div'); label.className = 'year-label'; label.textContent = yr + '° Año';
+    block.appendChild(label);
+    const row = document.createElement('div'); row.className = 'subjects-row';
+    materias.filter(m => m.year === yr).forEach(m => {
+      const s = state[m.id].status; const nota = state[m.id].nota;
+      const card = document.createElement('div'); card.className = 'card ' + s; card.dataset.id = m.id;
+      card.innerHTML = '<div class="card-name">' + m.name + '</div><div class="card-cuatri">' + (m.cuatri !== '-' ? 'Cuatri ' + m.cuatri : '') + '</div>' + (nota ? '<div class="card-nota">★ ' + nota + '</div>' : '') + '<div class="card-status"><div class="status-dot"></div>' + statusLabel[s] + '</div>';
+      card.addEventListener('click',      e => { e.stopPropagation(); closeAll(); openStateMenu(e, m.id); });
+      card.addEventListener('contextmenu',e => { e.preventDefault(); e.stopPropagation(); closeAll(); openCorrPanel(e, m.id); });
+      row.appendChild(card);
+    });
+    block.appendChild(row); planEl.appendChild(block);
+  });
+  renderStats();
+}
+
+function renderStats() {
+  const total=materias.length, finales=materias.filter(m=>state[m.id].status==='final').length, regulares=materias.filter(m=>state[m.id].status==='regular').length, cursando=materias.filter(m=>state[m.id].status==='cursando').length, puedo=materias.filter(m=>state[m.id].status==='puedo').length, pct=Math.round((finales/total)*100);
+  document.getElementById('stats').innerHTML='<div class="stat"><div class="stat-val" style="color:var(--final)">'+finales+'</div><div class="stat-label">Finales</div></div><div class="stat"><div class="stat-val" style="color:var(--regular)">'+regulares+'</div><div class="stat-label">Regulares</div></div><div class="stat"><div class="stat-val" style="color:var(--cursando)">'+cursando+'</div><div class="stat-label">Cursando</div></div><div class="stat"><div class="stat-val" style="color:var(--puedo)">'+puedo+'</div><div class="stat-label">Disponibles</div></div><div class="stat"><div class="stat-val">'+total+'</div><div class="stat-label">Total</div></div><div class="stat"><div class="stat-val" style="color:var(--final)">'+pct+'%</div><div class="stat-label">Finales %</div></div>';
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ════════════════════════════════
+// EXÁMENES RENDER
+// ════════════════════════════════
+let examFilter = 'todos';
+let examMateriaFilter = '';
+
+function daysDiff(fechaStr) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.round((new Date(fechaStr + 'T00:00:00') - today) / 86400000);
+}
+function formatFecha(fechaStr) {
+  return new Date(fechaStr + 'T00:00:00').toLocaleDateString('es-AR', { day:'2-digit', month:'long', year:'numeric' });
+}
+
+function renderExams() {
+  const content = document.getElementById('examContent');
+  let filtered = exams.filter(e => {
+    if (examMateriaFilter && e.materiaId !== examMateriaFilter) return false;
+    const diff = daysDiff(e.fecha);
+    if (examFilter === 'proximos')  return diff >= 0;
+    if (examFilter === 'historial') return diff < 0;
+    return true;
+  });
+  const proximos  = filtered.filter(e => daysDiff(e.fecha) >= 0).sort((a,b) => new Date(a.fecha)-new Date(b.fecha));
+  const historial = filtered.filter(e => daysDiff(e.fecha) < 0 ).sort((a,b) => new Date(b.fecha)-new Date(a.fecha));
+  let html = '';
+  const resultLabel = { pendiente:'Pendiente', aprobado:'✓ Aprobado', desaprobado:'✗ Desaprobado' };
+  if (examFilter !== 'historial' && proximos.length > 0) {
+    html += '<div class="exam-section-title">📅 Próximos exámenes</div><div class="exam-list">';
+    proximos.forEach(ex => {
+      const diff = daysDiff(ex.fecha);
+      const mat = materias.find(m => m.id === ex.materiaId);
+      const daysClass = diff === 0 ? 'hoy' : diff <= 3 ? 'urgente' : '';
+      const daysText  = diff === 0 ? 'HOY' : diff === 1 ? '1 día' : diff + ' días';
+      html += '<div class="exam-card ' + ex.resultado + '"><div class="exam-countdown"><div class="exam-days ' + daysClass + '">' + daysText + '</div><div class="exam-days-label">' + (diff===0?'¡hoy!':'restantes') + '</div></div><div class="exam-info"><div class="exam-materia">' + (mat?mat.name:ex.materiaId) + '</div><div class="exam-meta"><span class="exam-fecha">' + formatFecha(ex.fecha) + '</span>' + (ex.turno?'<span class="exam-turno">'+ex.turno+'</span>':'') + '</div><span class="exam-result-badge ' + ex.resultado + '">' + resultLabel[ex.resultado] + '</span>' + (ex.nota?'<span class="exam-nota-badge">★ '+ex.nota+'</span>':'') + '</div><div class="exam-actions"><button class="exam-btn del" data-id="' + ex.id + '">✕</button></div></div>';
+    });
+    html += '</div>';
+  }
+  if (examFilter !== 'proximos' && historial.length > 0) {
+    html += '<div class="exam-section-title">🗂 Historial</div><div class="exam-list">';
+    historial.forEach(ex => {
+      const mat = materias.find(m => m.id === ex.materiaId);
+      html += '<div class="exam-card ' + ex.resultado + '"><div class="exam-countdown"><div class="exam-days" style="font-size:1rem;color:var(--muted)">📋</div><div class="exam-days-label">pasado</div></div><div class="exam-info"><div class="exam-materia">' + (mat?mat.name:ex.materiaId) + '</div><div class="exam-meta"><span class="exam-fecha">' + formatFecha(ex.fecha) + '</span>' + (ex.turno?'<span class="exam-turno">'+ex.turno+'</span>':'') + '</div><span class="exam-result-badge ' + ex.resultado + '">' + resultLabel[ex.resultado] + '</span>' + (ex.nota?'<span class="exam-nota-badge">★ '+ex.nota+'</span>':'') + '</div><div class="exam-actions"><button class="exam-btn del" data-id="' + ex.id + '">✕</button></div></div>';
+    });
+    html += '</div>';
+  }
+  if (!html) html = '<div class="exam-empty">No hay exámenes para mostrar. ¡Agregá uno! 📝</div>';
+  content.innerHTML = html;
+  content.querySelectorAll('.exam-btn.del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      exams = exams.filter(e => e.id !== btn.dataset.id);
+      await saveExams(); renderExams();
+    });
+  });
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    examFilter = btn.dataset.filter;
+    renderExams();
+  });
+});
+document.getElementById('examFilterMateria').addEventListener('change', e => { examMateriaFilter = e.target.value; renderExams(); });
+document.getElementById('btnAddExamen').addEventListener('click', () => {
+  document.getElementById('modalExamen').classList.add('open');
+  document.getElementById('examModalFecha').value = '';
+  document.getElementById('examModalNota').value = '';
+  document.getElementById('examModalResultado').value = 'pendiente';
+});
+document.getElementById('btnCancelExamen').addEventListener('click', () => document.getElementById('modalExamen').classList.remove('open'));
+document.getElementById('btnConfirmExamen').addEventListener('click', async () => {
+  const matId     = document.getElementById('examModalMateria').value;
+  const fecha     = document.getElementById('examModalFecha').value;
+  const turno     = document.getElementById('examModalTurno').value;
+  const resultado = document.getElementById('examModalResultado').value;
+  const notaRaw   = parseFloat(document.getElementById('examModalNota').value);
+  const nota      = (!isNaN(notaRaw) && notaRaw >= 1 && notaRaw <= 10) ? notaRaw : null;
+  if (!matId || !fecha) { alert('Completá la materia y la fecha'); return; }
+  exams.push({ id: Date.now().toString(), materiaId:matId, fecha, turno, resultado, nota });
+  await saveExams();
+  document.getElementById('modalExamen').classList.remove('open');
+  renderExams();
+});
+
+// ════════════════════════════════
+// TAREAS RENDER
+// ════════════════════════════════
+function renderTareas() {
+  const grid = document.getElementById('tareasGrid');
+  grid.innerHTML = '';
+  const activas = materias.filter(m => state[m.id].status === 'cursando');
+  if (activas.length === 0) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:.85rem;font-style:italic;padding:40px 0;width:100%;text-align:center;">No tenés materias en <strong style=\'color:var(--cursando)\'>Cursando</strong> aún.<br>Cuando marques una desde el Plan, aparecerá acá automáticamente ✨</div>';
+    return;
+  }
+  activas.forEach(m => {
+    const items   = tareasData[m.id] || [];
+    const pending = items.filter(t => !t.done).length;
+    const card    = document.createElement('div'); card.className = 'tarea-card';
+    card.innerHTML = '<div class="tarea-card-head" style="background:#3b9eff;color:#001830"><div class="tarea-card-head-name">' + m.name + '</div><div class="tarea-card-head-count">' + (pending > 0 ? pending + ' pendiente' + (pending > 1 ? 's' : '') : 'todo listo ✓') + '</div></div>';
+    const body = document.createElement('div'); body.className = 'tarea-card-body';
+    if (items.length === 0) {
+      body.innerHTML = '<div class="tarea-empty">Sin tareas aún</div>';
+    } else {
+      items.forEach(t => {
+        const today = new Date(); today.setHours(0,0,0,0);
+        let venceHtml = '';
+        if (t.fecha) {
+          const diff = Math.round((new Date(t.fecha + 'T00:00:00') - today) / 86400000);
+          const cls = diff < 0 ? 'urgente' : diff === 0 ? 'hoy' : '';
+          const txt = diff < 0 ? 'Venció hace ' + Math.abs(diff) + ' día' + (Math.abs(diff) > 1 ? 's' : '') : diff === 0 ? 'Vence hoy' : 'Vence en ' + diff + ' día' + (diff > 1 ? 's' : '');
+          venceHtml = '<div class="tarea-vence ' + cls + '">📅 ' + txt + '</div>';
+        }
+        const item = document.createElement('div');
+        item.className = 'tarea-item' + (t.done ? ' done' : '');
+        item.innerHTML = '<div class="tarea-check' + (t.done ? ' checked' : '') + '"></div><div class="tarea-info"><div class="tarea-text">' + t.texto + '</div>' + venceHtml + '</div><button class="tarea-del" title="Eliminar">✕</button>';
+        item.querySelector('.tarea-check').addEventListener('click', async () => { t.done = !t.done; await saveTareas(); renderTareas(); });
+        item.querySelector('.tarea-del').addEventListener('click', async () => { tareasData[m.id] = items.filter(x => x.id !== t.id); await saveTareas(); renderTareas(); });
+        body.appendChild(item);
+      });
+    }
+    const addRow = document.createElement('div'); addRow.className = 'tarea-add-row';
+    addRow.innerHTML = '<input type="text" placeholder="Nueva tarea..." class="tarea-new-input"><input type="date" class="tarea-new-fecha"><button class="tarea-add-btn">+ Agregar</button>';
+    const addBtn   = addRow.querySelector('.tarea-add-btn');
+    const addInput = addRow.querySelector('.tarea-new-input');
+    const addFecha = addRow.querySelector('.tarea-new-fecha');
+    addBtn.addEventListener('click', async () => {
+      const txt = addInput.value.trim();
+      if (!txt) return;
+      if (!tareasData[m.id]) tareasData[m.id] = [];
+      tareasData[m.id].push({ id: Date.now().toString(), texto: txt, fecha: addFecha.value || null, done: false });
+      await saveTareas(); renderTareas();
+    });
+    addInput.addEventListener('keydown', e => { if (e.key === 'Enter') addBtn.click(); });
+    body.appendChild(addRow);
+    card.appendChild(body);
+    grid.appendChild(card);
+  });
+}
+
+// ════════════════════════════════
+// MENUS FLOTANTES
+// ════════════════════════════════
+function closeAll() {
+  document.getElementById('cycleMenu').classList.remove('open');
+  document.getElementById('corrPanel').classList.remove('open');
+  activeId = null;
+}
+let activeId = null;
+const menu      = document.getElementById('cycleMenu');
+const notaInput = document.getElementById('notaInput');
+
+function openStateMenu(e, id) {
+  activeId = id; notaInput.value = state[id].nota ?? '';
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 205) + 'px';
+  menu.style.top  = Math.min(e.clientY + 8, window.innerHeight - 230) + 'px';
+  menu.classList.add('open');
+}
+menu.querySelectorAll('.cycle-option').forEach(opt => {
+  opt.addEventListener('click', e => { e.stopPropagation(); if (!activeId) return; state[activeId].status = opt.dataset.status; applyChange(); });
+});
+notaInput.addEventListener('click', e => e.stopPropagation());
+notaInput.addEventListener('keydown', e => { if (e.key === 'Enter') applyChange(); });
+
+async function applyChange() {
+  if (!activeId) return;
+  const n = parseFloat(notaInput.value);
+  state[activeId].nota = (!isNaN(n) && n >= 1 && n <= 10) ? n : null;
+  recomputeAll();
+  await saveState();
+  menu.classList.remove('open'); activeId = null; render(); renderTareas();
+}
+
+const corrPanel = document.getElementById('corrPanel');
+function openCorrPanel(e, id) {
+  const m = materias.find(x => x.id === id); if (!m) return;
+  document.getElementById('corrTitle').textContent = m.name;
+  const body = document.getElementById('corrBody'); body.innerHTML = '';
+  if (m.correlativas.length === 0) {
+    body.innerHTML = '<div class="corr-empty">Esta materia no tiene correlativas 🎉</div>';
+    document.getElementById('corrResult').textContent = 'Sin requisitos previos';
+    document.getElementById('corrResult').className = 'corr-result no-corr';
+  } else {
+    const cumplidas = m.correlativas.filter(cid => isUnlocked(cid));
+    const faltantes = m.correlativas.filter(cid => !isUnlocked(cid));
+    if (faltantes.length > 0) {
+      const lbl = document.createElement('div'); lbl.className = 'corr-section-label'; lbl.textContent = '✗ Faltan'; body.appendChild(lbl);
+      faltantes.forEach(cid => { const cm = materias.find(x => x.id === cid); const s = state[cid]?.status || 'no-puede'; const item = document.createElement('div'); item.className = 'corr-item'; item.innerHTML = '<div class="corr-item-dot miss"></div><div class="corr-item-info"><div class="corr-item-name">' + (cm?cm.name:cid) + '</div><div class="corr-item-status miss">' + statusLabel[s] + '</div></div><div class="corr-item-check">✗</div>'; body.appendChild(item); });
+    }
+    if (cumplidas.length > 0) {
+      const lbl = document.createElement('div'); lbl.className = 'corr-section-label'; lbl.textContent = '✓ Cumplidas'; body.appendChild(lbl);
+      cumplidas.forEach(cid => { const cm = materias.find(x => x.id === cid); const s = state[cid]?.status || 'final'; const dc = s==='final'?'ok':'ok-reg'; const item = document.createElement('div'); item.className = 'corr-item'; item.innerHTML = '<div class="corr-item-dot '+dc+'"></div><div class="corr-item-info"><div class="corr-item-name">'+(cm?cm.name:cid)+'</div><div class="corr-item-status '+dc+'">'+statusLabel[s]+'</div></div><div class="corr-item-check">✓</div>'; body.appendChild(item); });
+    }
+    const res = document.getElementById('corrResult');
+    if (faltantes.length === 0) { res.textContent = '✓ Podés cursar esta materia'; res.className = 'corr-result all-ok'; }
+    else { res.textContent = 'Faltan ' + faltantes.length + ' de ' + m.correlativas.length + ' correlativas'; res.className = 'corr-result missing'; }
+  }
+  const pw=300,ph=280; let left=e.clientX+12; let top=e.clientY+8;
+  if(left+pw>window.innerWidth-10)  left=e.clientX-pw-8;
+  if(top+ph>window.innerHeight-10)  top=e.clientY-ph-8;
+  corrPanel.style.left=Math.max(8,left)+'px'; corrPanel.style.top=Math.max(8,top)+'px';
+  corrPanel.classList.add('open');
+}
+document.addEventListener('click', () => closeAll());
+document.addEventListener('contextmenu', e => { if (!e.target.closest('.card')) closeAll(); });
+corrPanel.addEventListener('click', e => e.stopPropagation());
+menu.addEventListener('click',      e => e.stopPropagation());
+
+// ════════════════════════════════
+// POBLAR SELECTS
+// ════════════════════════════════
+function populateMateriaSelects() {
+  const opts = materias.map(m => '<option value="'+m.id+'">'+m.name+'</option>').join('');
+  document.getElementById('examModalMateria').innerHTML  = '<option value="">— Materia —</option>' + opts;
+  document.getElementById('examFilterMateria').innerHTML = '<option value="">Todas las materias</option>' + opts;
+}
+
+// ════════════════════════════════
+// INIT — carga desde Firestore
+// ════════════════════════════════
+async function init() {
+  document.getElementById('saveText').textContent = 'Cargando...';
+  const hadSaved = await loadState();
+  if (!hadSaved) state = getDefaultState();
+  await loadExams();
+  await loadTareas();
+  populateMateriaSelects();
+  recomputeAll();
+  render();
+  renderExams();
+  renderTareas();
+  document.getElementById('saveText').textContent = 'Sincronizado ✓';
+}
+
+init();
+</script>
+</body>
+</html>
