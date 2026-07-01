@@ -1,1 +1,1 @@
-# traductorado
+# Translate
